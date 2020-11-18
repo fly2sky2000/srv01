@@ -64,4 +64,10 @@ public class TradingRecordController  extends ApiController {
         return success(this.service.removeByIds(ids));
     }
 
+    @DeleteMapping("{id}")
+    public R deleteOne(@PathVariable String id) {
+
+        return success(this.service.removeById(id));
+    }
+
 }
