@@ -1,8 +1,8 @@
 <template>
   <el-table :data="tableData" border style="width: 100%">
-    <el-table-column prop="date" label="日期" width="180"> </el-table-column>
-    <el-table-column prop="name" label="姓名" width="180"> </el-table-column>
-    <el-table-column prop="address" label="地址"> </el-table-column>
+    <el-table-column prop="coinCode" label="币种" width="180"> </el-table-column>
+    <el-table-column prop="quantity" label="数量" width="180"> </el-table-column>
+    <el-table-column prop="money" label="金额"> </el-table-column>
 
     <el-table-column label="操作" width="180">
       <template slot-scope="scope">
@@ -23,32 +23,35 @@
   </el-table>
 </template>
 <script>
+import axios from "axios";
+import qs from "qs";
+
+const debug = process.env.NODE_ENV !== 'production'
+const axInstance = axios.create({
+    baseURL: debug ? 'api' : 'http://1.3.4.5.6:89',
+    timeout: 10000,
+    responseType: 'json',
+    withCredentials: false, // 表示跨域请求时是否需要使用凭证
+    headers: {
+        token: store.state.axios.token,
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+    }
+})
+// 声明基础访问地址
+axios.defaults.baseURL = 'http://localhost:8188/srv01'
+axios.defaults.withCredentials = true;//跨域  
+axios.defaults.headers = {
+    "Content-Type": "application/x-www-form-urlencoded"
+}
+axios.defaults.transformRequest = function(data){
+    data = qs.stringify(data);
+    return data;
+}
 export default {
   name: "TableData",
   data() {
     return {
-      tableData: [
-        {
-          date: "2016-03-02",
-          name: "张三",
-          address: "广州市天河区金沙江路 1518 弄",
-        },
-        {
-          date: "2016-04-06",
-          name: "李四",
-          address: "广州市黄埔区金沙江路 1517 弄",
-        },
-        {
-          date: "2016-08-01",
-          name: "王五",
-          address: "北京市金沙江路 1519 弄",
-        },
-        {
-          date: "2016-06-03",
-          name: "赵六",
-          address: "上海市普陀区金沙江路 1516 弄",
-        },
-      ],
+      tableData: [],
       addBox: false,
       editBox: false,
       user: {},
@@ -60,7 +63,15 @@ export default {
       },
     };
   },
+  mounted: function() {
+    this.loadData();
+  },
   methods: {
+    loadData() {
+      axios.post("/bca/trading-record/", (result) => {
+        this.tableData = result.data;
+      });
+    },
     handleEditClick(index, row) {
       this.editBox = true;
       this.user = row;
